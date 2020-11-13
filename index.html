@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WebVR - Aframe - VR walkthrough</title>
+    <meta name="description" content="WebVR - Aframe - VR walkthrough" />
+    <meta name="author" content="Kumar Ahir - VR Designer" />
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-animation-component@^4.1.2/dist/aframe-animation-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.5.1/dist/aframe-look-at-component.min.js"></script>
+    <script src="https://unpkg.com/@editvr/aframe-dialog-popup-component@1.7.2/dist/aframe-dialog-popup-component.min.js"></script>
+    <script>
+      AFRAME.registerComponent("hotspots", {
+        init: function() {
+          this.el.addEventListener("reloadspots", function(evt) {
+            //get the entire current spot group and scale it to 0
+            var currspotgroup = document.getElementById(evt.detail.currspots);
+            currspotgroup.setAttribute("scale", "0 0 0");
+
+            //get the entire new spot group and scale it to 1
+            var newspotgroup = document.getElementById(evt.detail.newspots);
+            newspotgroup.setAttribute("scale", "1 1 1");
+          });
+        }
+      });
+      AFRAME.registerComponent("spot", {
+        schema: {
+          linkto: { type: "string", default: "" },
+          spotgroup: { type: "string", default: "" }
+        },
+        init: function() {
+          //add image source of hotspot icon
+          this.el.setAttribute("src", "#hotspot");
+          //make the icon look at the camera all the time
+          this.el.setAttribute("look-at", "#cam");
+
+          var data = this.data;
+
+          this.el.addEventListener("click", function() {
+            //set the skybox source to the new image as per the spot
+            var sky = document.getElementById("skybox");
+            sky.setAttribute("src", data.linkto);
+
+            var spotcomp = document.getElementById("spots");
+            var currspots = this.parentElement.getAttribute("id");
+            //create event for spots component to change the spots data
+            spotcomp.emit("reloadspots", {
+              newspots: data.spotgroup,
+              currspots: currspots
+            });
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <a-scene background="color: #ECECEC">
+      <a-assets>
+        <img
+          id="pic1"
+          src="https://cdn.glitch.com/2a340e1a-eb72-478f-8029-9a9f72f21e9c%2FIMG_20201030_095011.JPG?v=1605127049030"
+        />
+        <!--img id="point2" src="https://cdn.glitch.com/2087dfa6-bd02-4451-a189-36095a66f386%2Fpoint2.jpg?1545394471327"/> 
+        <img id="point3" src="https://cdn.glitch.com/2087dfa6-bd02-4451-a189-36095a66f386%2Fpoint3.jpg?1545394470620"/> 
+        <img id="point4" src="https://cdn.glitch.com/2087dfa6-bd02-4451-a189-36095a66f386%2Fpoint4.jpg?1545394470510"/-->
+        <img
+          id="info-button"
+          src="https://cdn.glitch.com/2a340e1a-eb72-478f-8029-9a9f72f21e9c%2F682777_button_512x512.png?v=1605127018322"
+        />
+        <img
+          id="hotspot"
+          src="https://cdn.glitch.com/2087dfa6-bd02-4451-a189-36095a66f386%2Fup-arrow.png?1545397127546"
+        />
+      </a-assets>
+
+      <a-entity id="spots" hotspots>
+        <a-entity id="group-point1">
+          <a-image
+            spot="linkto:#point2;spotgroup:group-point2"
+            position="-4 0 10"
+          ></a-image>
+        </a-entity>
+        <a-entity id="group-point2" scale="0 0 0">
+          <a-image
+            spot="linkto:#point1;spotgroup:group-point1"
+            position="10 0 -8"
+          ></a-image>
+          <a-image
+            spot="linkto:#point3;spotgroup:group-point3"
+            position="0 0 10"
+          ></a-image>
+        </a-entity>
+        <a-entity id="group-point3" scale="0 0 0">
+          <a-image
+            spot="linkto:#point2;spotgroup:group-point2"
+            position="10 0 3"
+          ></a-image>
+          <a-image
+            spot="linkto:#point4;spotgroup:group-point4"
+            position="-10 0 -3"
+          ></a-image>
+        </a-entity>
+        <a-entity id="group-point4" scale="0 0 0">
+          <a-image
+            spot="linkto:#point3;spotgroup:group-point3"
+            position="0 0 -10"
+          ></a-image>
+        </a-entity>
+      </a-entity>
+
+      <a-sky id="skybox" src="#pic1"></a-sky>
+      
+      <a-entity id="cam" camera position="0 1.6 0" look-controls>
+        <a-entity cursor="fuse:true;fuseTimeout:2000"
+                  geometry="primitive:ring;radiusInner:0.01;radiusOuter:0.02"
+                  position="0 0 -1.8"
+                  material="shader:flat;color:#000"
+                  animation__mouseenter="property:scale;to:3 3 3;startEvents:mouseenter;endEvents:mouseleave;dir:reverse;dur:2000;loop:1">
+        </a-entity>
+      </a-entity>
+      <a-entity
+        id="dialog"
+        position="3.5 6.5 -10"
+        dialog-popup="
+          openIconImage: https://cdn.glitch.com/2a340e1a-eb72-478f-8029-9a9f72f21e9c%2F682777_button_512x512.png?v=1605127018322;
+          openIconRadius:0.2;
+          closeIconImage: https://cdn.glitch.com/2a340e1a-eb72-478f-8029-9a9f72f21e9c%2Fclose.jpg?v=1605133809644;
+          title:Title;
+          titleFont: roboto;
+          titleColor: #000;
+          image:https://cdn.glitch.com/2a340e1a-eb72-478f-8029-9a9f72f21e9c%2Fcapture_20201112144132092.bmp?v=1605188525891;
+          body:adsfj as gh eoärg ngbpj boe rgeiog nosen re ijgwong dsfngöe  gnfl nbösdnf gäeir jg reg ndfnböjksdn
+          bodyFont: roboto;
+          bodyColor: #000;
+          dialogBoxHeight: 3.5;
+          dialogBoxColor: #fff;
+          "></a-entity>
+    </a-scene>
+  </body>
+</html>
